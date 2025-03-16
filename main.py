@@ -93,7 +93,7 @@ model = Model(
     project_id=project_id
 )
 
-flan_ul2_llm = WatsonxLLM(model=model)
+llama_3_llm = WatsonxLLM(model=model)
 
 """
 Retrival
@@ -102,15 +102,59 @@ LangChain has a number of components that are designed to help retrieve informat
 from the document and build question-answering applications,
 which helps you complete the retrieve part of the Retrieval task.
 """
-qa = RetrievalQA.from_chain_type(llm=flan_ul2_llm, 
+qa = RetrievalQA.from_chain_type(llm=llama_3_llm, 
                                  chain_type="stuff", 
-                                 retriever=docsearch.as_retriever(), 
+                                 retriever=docsearch.as_retriever(),
                                  return_source_documents=False)
 # query = "what is mobile policy?"
 # response = qa.invoke(query)
 # print(response)
 
-# trying different query
-query = "Can you summarize the document for me?"
+# # trying different query that requires powerfull llm
+# query = "Can you summarize the document for me?"
+# response = qa.invoke(query)
+# print(response)
+
+
+"""
+Dive Deep
+"""
+
+# trying a query that asks questions which is not covered by the document
+# as the result of the query, The LLM might respond with information that actually is not true.
+# query = "Can I eat in company vehicles?"
+# response = qa.invoke(query)
+# print(response)
+
+"""
+Using prompt template
+In-order to avoid our LLM making up an answer outside of our given information,
+we can use a prompt template.
+In the following code, you create a prompt template using PromptTemplate.
+
+context and question are keywords in the RetrievalQA,
+so LangChain can automatically recognize them as document content and query.
+"""
+prompt_template = """Use the information from the document to answer the question at the end.
+If you don't know the answer, just say that you don't know, definately do not try to make up an answer.
+
+{context}
+
+Question: {question}
+"""
+
+PROMPT = PromptTemplate(
+    template=prompt_template, input_variables=["context", "question"]
+)
+
+chain_type_kwargs = {"prompt": PROMPT}
+
+qa = RetrievalQA.from_chain_type(llm=llama_3_llm, 
+                                 chain_type="stuff", 
+                                 retriever=docsearch.as_retriever(), 
+                                 chain_type_kwargs=chain_type_kwargs, 
+                                 return_source_documents=False)
+
+query = "Can I eat in company vehicles?"
 response = qa.invoke(query)
 print(response)
