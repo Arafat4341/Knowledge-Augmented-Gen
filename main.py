@@ -68,10 +68,10 @@ print('document ingested', docsearch)
 LLM model construction
 """
 
-model_id = 'google/flan-ul2'
+model_id = 'meta-llama/llama-3-3-70b-instruct'
+
 parameters = {
     GenParams.DECODING_METHOD: DecodingMethods.GREEDY,  
-    GenParams.MIN_NEW_TOKENS: 130, # this controls the minimum number of tokens in the generated output
     GenParams.MAX_NEW_TOKENS: 256,  # this controls the maximum number of tokens in the generated output
     GenParams.TEMPERATURE: 0.5 # this randomness or creativity of the model's responses
 }
@@ -106,5 +106,11 @@ qa = RetrievalQA.from_chain_type(llm=flan_ul2_llm,
                                  chain_type="stuff", 
                                  retriever=docsearch.as_retriever(), 
                                  return_source_documents=False)
-query = "what is mobile policy?"
-print(qa.invoke(query))
+# query = "what is mobile policy?"
+# response = qa.invoke(query)
+# print(response)
+
+# trying different query
+query = "Can you summarize the document for me?"
+response = qa.invoke(query)
+print(response)
