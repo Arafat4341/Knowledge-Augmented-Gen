@@ -102,10 +102,10 @@ LangChain has a number of components that are designed to help retrieve informat
 from the document and build question-answering applications,
 which helps you complete the retrieve part of the Retrieval task.
 """
-qa = RetrievalQA.from_chain_type(llm=llama_3_llm, 
-                                 chain_type="stuff", 
-                                 retriever=docsearch.as_retriever(),
-                                 return_source_documents=False)
+# qa = RetrievalQA.from_chain_type(llm=llama_3_llm, 
+#                                  chain_type="stuff", 
+#                                  retriever=docsearch.as_retriever(),
+#                                  return_source_documents=False)
 # query = "what is mobile policy?"
 # response = qa.invoke(query)
 # print(response)
@@ -149,12 +149,52 @@ PROMPT = PromptTemplate(
 
 chain_type_kwargs = {"prompt": PROMPT}
 
-qa = RetrievalQA.from_chain_type(llm=llama_3_llm, 
-                                 chain_type="stuff", 
-                                 retriever=docsearch.as_retriever(), 
-                                 chain_type_kwargs=chain_type_kwargs, 
-                                 return_source_documents=False)
+# qa = RetrievalQA.from_chain_type(llm=llama_3_llm, 
+#                                  chain_type="stuff", 
+#                                  retriever=docsearch.as_retriever(), 
+#                                  chain_type_kwargs=chain_type_kwargs, 
+#                                  return_source_documents=False)
 
-query = "Can I eat in company vehicles?"
-response = qa.invoke(query)
-print(response)
+# query = "Can I eat in company vehicles?"
+# response = qa.invoke(query)
+# print(response)
+
+"""
+Making conversation have memory
+ An LLM that retains the memory of your previous exchanges
+ builds a more coherent and contextually rich conversation.
+"""
+
+# You start a new query, "What I cannot do in it?". 
+# You do not specify what "it" is. In this case, "it" means "company vehicles"
+# if you refer to the last query.
+# query = "What I cannot do in it?"
+# response = qa.invoke(query)
+# print(response)
+
+# To make the LLM have memory, you introduce the ConversationBufferMemory function from LangChain.
+memory = ConversationBufferMemory(memory_key = "chat_history", return_message = True)
+
+qa = ConversationalRetrievalChain.from_llm(llm=llama_3_llm, 
+                                           chain_type="stuff", 
+                                           retriever=docsearch.as_retriever(), 
+                                           memory = memory, 
+                                           get_chat_history=lambda h : h, 
+                                           return_source_documents=False)
+
+# Create a history list to store the chat history
+history = []
+
+query = "What is mobile policy?"
+result = qa.invoke({"question":query}, {"chat_history": history})
+print(result["answer"])
+history.append((query, result["answer"]))
+
+query = "List points in it?"
+result = qa({"question": query}, {"chat_history": history})
+print(result["answer"])
+history.append((query, result["answer"]))
+
+query = "What is the aim of it?"
+result = qa({"question": query}, {"chat_history": history})
+print(result["answer"])
