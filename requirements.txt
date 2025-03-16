@@ -6,3 +6,4 @@ huggingface-hub == 0.23.4
 sentence-transformers == 2.5.1
 chromadb
 wget == 3.2
+python-dotenv

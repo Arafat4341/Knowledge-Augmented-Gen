@@ -14,6 +14,9 @@ from ibm_watsonx_ai.foundation_models.utils.enums import ModelTypes, DecodingMet
 from ibm_watson_machine_learning.foundation_models.extensions.langchain import WatsonxLLM
 import wget
 
+from dotenv import load_dotenv
+import os
+
 # ============== Indexing =================
 """
 Loading
@@ -60,3 +63,33 @@ embeddings = HuggingFaceEmbeddings()
 docsearch = Chroma.from_documents(texts, embeddings)  # store the embedding in docsearch using Chromadb
 print('document ingested', docsearch)
 
+# ============== Retrival Task ==================
+"""
+LLM model construction
+"""
+
+model_id = 'google/flan-ul2'
+parameters = {
+    GenParams.DECODING_METHOD: DecodingMethods.GREEDY,  
+    GenParams.MIN_NEW_TOKENS: 130, # this controls the minimum number of tokens in the generated output
+    GenParams.MAX_NEW_TOKENS: 256,  # this controls the maximum number of tokens in the generated output
+    GenParams.TEMPERATURE: 0.5 # this randomness or creativity of the model's responses
+}
+
+# Specify the path to your .env file
+dotenv_path = os.path.join(os.path.dirname(__file__), 'config', '.env')
+load_dotenv(dotenv_path)
+
+credentials = {
+    "url": os.getenv("IBM_URL"),
+    "apikey": os.getenv("IBM_API_KEY")
+}
+project_id = os.getenv("IBM_PROJECT_ID")
+
+model = Model(
+    model_id=model_id,
+    params=parameters,
+    credentials=credentials,
+    project_id=project_id
+)
+flan_ul2_llm = WatsonxLLM(model=model)
