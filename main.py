@@ -92,4 +92,19 @@ model = Model(
     credentials=credentials,
     project_id=project_id
 )
+
 flan_ul2_llm = WatsonxLLM(model=model)
+
+"""
+Retrival
+Integrating LangChain
+LangChain has a number of components that are designed to help retrieve information
+from the document and build question-answering applications,
+which helps you complete the retrieve part of the Retrieval task.
+"""
+qa = RetrievalQA.from_chain_type(llm=flan_ul2_llm, 
+                                 chain_type="stuff", 
+                                 retriever=docsearch.as_retriever(), 
+                                 return_source_documents=False)
+query = "what is mobile policy?"
+print(qa.invoke(query))
