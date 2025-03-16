@@ -1,4 +1,5 @@
 kag_venv
 companyPolicies.txt
-data
+data/*
 .env
+__pycache__
